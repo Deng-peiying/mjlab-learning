@@ -1,21 +1,21 @@
-"""Domain randomization functions."""
+"""Domain randomization functions. 域随机化函数"""
 
-# Types and built-in instances.
+# Types and built-in instances.  类型和内置实例
 # isort: split
-from ._types import Distribution as Distribution
-from ._types import Operation as Operation
-from ._types import abs as abs
-from ._types import add as add
-from ._types import gaussian as gaussian
-from ._types import log_uniform as log_uniform
-from ._types import scale as scale
-from ._types import uniform as uniform
+from ._types import Distribution as Distribution # 分布类型
+from ._types import Operation as Operation # 操作类型
+from ._types import abs as abs 
+from ._types import add as add # 加法扰动
+from ._types import gaussian as gaussian # 高斯分布
+from ._types import log_uniform as log_uniform #对数均匀分布
+from ._types import scale as scale  # 缩放扰动
+from ._types import uniform as uniform # 均匀分布
 
 # Geom.
 # isort: split
 from .geom import geom_friction as geom_friction
 from .geom import geom_pos as geom_pos
-from .geom import geom_quat as geom_quat
+from .geom import geom_quat as geom_quat # 四元数姿态
 from .geom import geom_rgba as geom_rgba
 from .geom import geom_size as geom_size
 
@@ -44,12 +44,12 @@ from .joint import joint_limits as joint_limits
 from .joint import joint_stiffness as joint_stiffness
 from .joint import qpos0 as qpos0
 
-# Site.
+# Site. 站点（Site）——site 往往是附着在模型上的标记点、参考点
 # isort: split
 from .site import site_pos as site_pos
 from .site import site_quat as site_quat
 
-# Tendon.
+# Tendon. 肌腱
 # isort: split
 from .tendon import tendon_armature as tendon_armature
 from .tendon import tendon_damping as tendon_damping
@@ -69,11 +69,11 @@ from .camera import cam_quat as cam_quat
 from .light import light_dir as light_dir
 from .light import light_pos as light_pos
 
-# Material.
+# Material. 材质
 # isort: split
 from .material import mat_rgba as mat_rgba
 
-# Actuator.
+# Actuator. 执行器
 # isort: split
 from .actuator import effort_limits as effort_limits
 from .actuator import pd_gains as pd_gains

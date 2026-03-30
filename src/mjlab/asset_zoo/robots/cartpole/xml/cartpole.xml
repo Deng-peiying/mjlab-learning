@@ -1,0 +1,34 @@
+<mujoco model="cartpole">
+  <compiler inertiafromgeom="true" angle="degree"/>
+  <option timestep="0.01" gravity="0 0 -9.81"/>
+
+  <worldbody>
+    <!-- 地面 -->
+    <geom name="floor" type="plane" size="0 0 0.1" rgba="0.8 0.9 0.8 1"/>
+
+    <!-- 小车主体 -->
+    <body name="cart" pos="0 0 0.1">
+      <!-- 沿 x 方向滑动 -->
+      <joint name="slider" type="slide" axis="1 0 0" range="-5 5"/>
+      <geom name="cart_geom" type="box" size="0.25 0.15 0.05" rgba="0.2 0.3 0.8 1"/>
+
+      <!-- 杆，从小车顶部铰接 -->
+      <body name="pole" pos="0 0 0.08">
+        <joint name="hinge" type="hinge" axis="0 1 0" pos="0 0 0"/>
+        <!-- 使用 capsule 表示细长杆（从关节向上 1.0m） -->
+        <geom name="pole_geom" type="capsule" fromto="0 0 0 0 0 1.0" size="0.03" rgba="0.8 0.3 0.3 1"/>
+        <site name="pole_tip" pos="0 0 1.0" size="0.02" rgba="0 1 0 1"/>
+      </body>
+    </body>
+
+    <!-- 简单相机，便于可视化 -->
+    <camera name="external" pos="0 -3 1.2" xyaxes="1 0 0 0 0.5 0.866"/>
+  </worldbody>
+
+  <actuator>
+    <!-- 对小车施力（常用） -->
+    <motor name="cart_force" joint="slider" gear="100"/>
+    <!-- 可选：对杆施扭矩 -->
+    <motor name="pole_torque" joint="hinge" gear="1"/>
+  </actuator>
+</mujoco>

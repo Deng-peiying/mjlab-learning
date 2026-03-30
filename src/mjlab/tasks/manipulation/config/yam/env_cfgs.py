@@ -6,26 +6,28 @@ from mjlab.asset_zoo.robots import (
   YAM_ACTION_SCALE,
   get_yam_robot_cfg,
 )
-from mjlab.entity import EntityCfg
-from mjlab.envs import ManagerBasedRlEnvCfg
-from mjlab.envs.mdp import dr
-from mjlab.envs.mdp.actions import JointPositionActionCfg
-from mjlab.managers import (
+from mjlab.entity import EntityCfg # EntityCfg：用于在场景中注册实体（机器人、方块等）
+from mjlab.envs import ManagerBasedRlEnvCfg # ManagerBasedRlEnvCfg：基于 manager 组织的强化学习环境总配置类型
+from mjlab.envs.mdp import dr # dr：通常表示 domain randomization（领域随机化）相关方法
+from mjlab.envs.mdp.actions import JointPositionActionCfg # 关节位置动作配置
+from mjlab.managers import ( # 观察组配置、观察项配置
   ObservationGroupCfg,
   ObservationTermCfg,
 )
-from mjlab.managers.event_manager import EventTermCfg
-from mjlab.managers.scene_entity_config import SceneEntityCfg
+from mjlab.managers.event_manager import EventTermCfg # 事件项配置
+from mjlab.managers.scene_entity_config import SceneEntityCfg # 用于指定场景中的某个实体及其子元素（geom / site / joint 等）
 from mjlab.sensor import CameraSensorCfg, ContactSensorCfg
 from mjlab.tasks.manipulation import mdp as manipulation_mdp
-from mjlab.tasks.manipulation.lift_cube_env_cfg import make_lift_cube_env_cfg
+from mjlab.tasks.manipulation.lift_cube_env_cfg import make_lift_cube_env_cfg # 创建一个“抬起方块”任务的默认环境配置
 
 
-def get_cube_spec(cube_size: float = 0.02, mass: float = 0.05) -> mujoco.MjSpec:
-  spec = mujoco.MjSpec()
-  body = spec.worldbody.add_body(name="cube")
+def get_cube_spec(cube_size: float = 0.02, mass: float = 0.05) -> mujoco.MjSpec:# 创建一个 MuJoCo 里的小立方体物体
+  spec = mujoco.MjSpec()  # 创建一个空的 MuJoCo 规格对象
+  body = spec.worldbody.add_body(name="cube") # 在 worldbody 下添加一个刚体 body，名字叫 cube
   body.add_freejoint(name="cube_joint")
-  body.add_geom(
+    # 给这个 body 添加一个 freejoint（自由关节）
+    # freejoint 表示这个物体在 3D 空间中有完整的 6 自由度：平移 + 旋转，都可自由运动
+  body.add_geom( # 给 cube 刚体添加一个几何体
     name="cube_geom",
     type=mujoco.mjtGeom.mjGEOM_BOX,
     size=(cube_size,) * 3,
@@ -35,24 +37,23 @@ def get_cube_spec(cube_size: float = 0.02, mass: float = 0.05) -> mujoco.MjSpec:
   return spec
 
 
-def yam_lift_cube_env_cfg(
+def yam_lift_cube_env_cfg( # 构造“机械臂抬方块”的基础环境配置
   play: bool = False,
 ) -> ManagerBasedRlEnvCfg:
-  cfg = make_lift_cube_env_cfg()
-
-  cfg.scene.entities = {
-    "robot": get_yam_robot_cfg(),
-    "cube": EntityCfg(spec_fn=get_cube_spec),
+  cfg = make_lift_cube_env_cfg() # 先基于默认模板生成一个“抬起方块”的环境配置
+  cfg.scene.entities = { # 重新定义场景中的实体：
+    "robot": get_yam_robot_cfg(),# - robot：使用 YAM 机械臂配置
+    "cube": EntityCfg(spec_fn=get_cube_spec),# - cube：使用上面定义的 get_cube_spec() 动态生成方块
   }
 
-  joint_pos_action = cfg.actions["joint_pos"]
-  assert isinstance(joint_pos_action, JointPositionActionCfg)
-  joint_pos_action.scale = YAM_ACTION_SCALE
+  joint_pos_action = cfg.actions["joint_pos"] # 取出动作配置中的 joint_pos（关节位置控制）
+  assert isinstance(joint_pos_action, JointPositionActionCfg) # 断言确保它确实是 JointPositionActionCfg 类型
+  joint_pos_action.scale = YAM_ACTION_SCALE  # 调整动作缩放系数，使动作幅度适配 YAM 机械臂
 
   cfg.observations["actor"].terms["ee_to_cube"].params["asset_cfg"].site_names = (
-    "grasp_site",
+    "grasp_site", # 这里把用于计算末端到方块相对关系的 site 改成 "grasp_site"
   )
-  cfg.rewards["lift"].params["asset_cfg"].site_names = ("grasp_site",)
+  cfg.rewards["lift"].params["asset_cfg"].site_names = ("grasp_site",) # lift 奖励也使用 grasp_site 作为抓取位置参考点
 
   fingertip_geoms = r"[lr]f_down(6|7|8|9|10|11)_collision"
   cfg.events["fingertip_friction_slide"].params[
@@ -83,7 +84,7 @@ def yam_lift_cube_env_cfg(
   return cfg
 
 
-def yam_lift_cube_vision_env_cfg(
+def yam_lift_cube_vision_env_cfg(  # 构造“机械臂抬方块”的视觉环境配置
   cam_type: Literal["rgb", "depth"],
   play: bool = False,
 ) -> ManagerBasedRlEnvCfg:
